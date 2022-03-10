@@ -1,0 +1,54 @@
+<launch>
+
+  <!-- move_base -->
+  <!-- Arguments -->
+  <arg name="model" default="course" doc="model type [course, burger, waffle, waffle_pi]"/>
+  <arg name="cmd_vel_topic" default="move_base/cmd_vel"/>
+  <arg name="odom_topic" default="/t265/odom/sample"/>
+  <arg name="move_forward_only" default="false"/>
+
+  <!-- move_base -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <rosparam file="$(find leader_2dnav)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find leader_2dnav)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find leader_2dnav)/param/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find leader_2dnav)/param/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find leader_2dnav)/param/move_base_params.yaml" command="load" />
+    <rosparam file="$(find leader_2dnav)/param/dwa_local_planner_params_$(arg model).yaml" command="load" />
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+    <remap from="odom" to="$(arg odom_topic)"/>
+    <param name="DWAPlannerROS/min_vel_x" value="0.0" if="$(arg move_forward_only)" />
+    <remap from="/map" to="rtabmap/grid_map"/>
+  </node>
+
+
+  <!-- Fake laser -->
+  <!-- <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node"
+    name="pointcloud_to_laserscan" required="true">
+    <remap from="cloud_in" to="/camera/depth/color/points"/>
+    <remap from="scan" to="/scan"/>
+    <param name="min_height" value="-0.5"/>
+    <param name="max_height" value="1"/>
+    <param name="range_min" value="0.1"/>
+    <param name="range_max" value="4.0"/>
+  </node> --> <!-- <param name="target_frame" value="base_link"/> -->
+
+  <!-- This one is working better now. -->
+  <node pkg="depthimage_to_laserscan" type="depthimage_to_laserscan"
+    name="depthimage_to_laserscan" required="true">
+    <remap from="image" to="d400/depth/image_rect_raw"/>
+    <remap from="camera_info" to="d400/depth/camera_info"/>
+    <remap from="scan" to="/scan"/>
+    <param name="range_min" value="0.1"/>
+    <param name="range_max" value="6.0"/>
+    <param name="output_frame_id" value="d400_depth_frame"/>
+  </node>
+
+  <!-- rviz -->
+  <!-- <node pkg="rviz" type="rviz" name="rviz" required="true" -->
+    <!-- args="-d $(find leader_2dnav)/rviz/nav_yong.rviz"/> -->
+
+
+
+</launch>

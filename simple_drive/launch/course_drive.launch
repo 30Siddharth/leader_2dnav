@@ -1,0 +1,10 @@
+<launch>
+  <!-- Joystick Input Node -->
+  <!-- <include file="$(find simple_drive)/launch/drive_teleop.launch"/> -->
+  <!-- Multiplex Motor Commands Node -->
+  <include file="$(find simple_drive)/launch/cmd_vel_mux.launch"/>
+  <!-- Arduino Communication -->
+  <node pkg="rosserial_python" type="serial_node.py" name="arduino_communication"
+    args="/dev/ttyACM0" required="true">
+  </node>
+</launch>
